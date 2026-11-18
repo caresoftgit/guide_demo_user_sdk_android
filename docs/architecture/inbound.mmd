@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant P as Tổng đài
+    participant M as SIP bridge và media
+    participant G as Gateway
+    participant Q as Push provider
+    participant S as SDK trên thiết bị
+    P->>M: INVITE tới User ID, nguồn SIP được phép
+    M->>G: Webhook đã ký, trunk và SIP participant
+    G->>G: Trunk map account/App ID, tìm session user
+    G-->>S: Event incoming nếu đang kết nối
+    G->>Q: Push incoming có TTL
+    Q-->>S: Tín hiệu incoming
+    S->>G: Lấy snapshot hiện tại
+    S->>S: Kiểm tra session/app/deadline, báo cuộc gọi OS/UI
+    S->>G: Người dùng trả lời
+    G->>G: Claim một session winner
+    G-->>S: CONNECTING và quyền lấy media
+    S->>M: Join media, xuất bản micro
+    G-->>S: ACTIVE khi media/SIP xác nhận
+    G-->>S: Session thua dừng ringing

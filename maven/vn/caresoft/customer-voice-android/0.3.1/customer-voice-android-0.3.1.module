@@ -1,0 +1,118 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "vn.caresoft",
+    "module": "customer-voice-android",
+    "version": "0.3.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.10.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-android",
+          "version": {
+            "requires": "1.9.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.0.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "customer-voice-android-0.3.1.aar",
+          "url": "customer-voice-android-0.3.1.aar",
+          "size": 228418,
+          "sha512": "1c7d163f91a1e3dcbab2b1f7153c95854550a0e036495382c91a07379b130818057fe1aeb3817a4d527203a0879bf976126de3c08a22276d1dd45226e9d01ec1",
+          "sha256": "02c64c7173d59355ff953ff231c2cca2ceeb1465bd249ccb9a7487d71d547b65",
+          "sha1": "1ed8ce4ce6921056a2da3db825ae0d3e0f880085",
+          "md5": "c4c03a92fb4ef692346df86d3e0cf56c"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "com.squareup.okhttp3",
+          "module": "okhttp",
+          "version": {
+            "requires": "4.12.0"
+          }
+        },
+        {
+          "group": "io.livekit",
+          "module": "livekit-android",
+          "version": {
+            "requires": "2.20.2"
+          }
+        },
+        {
+          "group": "androidx.core",
+          "module": "core-telecom",
+          "version": {
+            "requires": "1.0.0"
+          }
+        },
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.15.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-android",
+          "version": {
+            "requires": "1.9.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.0.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "customer-voice-android-0.3.1.aar",
+          "url": "customer-voice-android-0.3.1.aar",
+          "size": 228418,
+          "sha512": "1c7d163f91a1e3dcbab2b1f7153c95854550a0e036495382c91a07379b130818057fe1aeb3817a4d527203a0879bf976126de3c08a22276d1dd45226e9d01ec1",
+          "sha256": "02c64c7173d59355ff953ff231c2cca2ceeb1465bd249ccb9a7487d71d547b65",
+          "sha1": "1ed8ce4ce6921056a2da3db825ae0d3e0f880085",
+          "md5": "c4c03a92fb4ef692346df86d3e0cf56c"
+        }
+      ]
+    }
+  ]
+}

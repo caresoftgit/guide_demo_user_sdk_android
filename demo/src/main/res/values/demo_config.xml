@@ -1,0 +1,12 @@
+<resources>
+  <!-- Fill these public application settings before installing the demo. -->
+  <string name="demo_default_backend" translatable="false"></string>
+  <string name="demo_default_account" translatable="false"></string>
+  <string name="demo_default_businessNumber" translatable="false"></string>
+  <string name="demo_default_user" translatable="false"></string>
+  <string name="demo_default_app" translatable="false"></string>
+  <string name="demo_default_firebaseAppId" translatable="false"></string>
+  <string name="demo_default_firebaseApiKey" translatable="false"></string>
+  <string name="demo_default_firebaseProject" translatable="false"></string>
+  <string name="demo_default_firebaseSender" translatable="false"></string>
+</resources>

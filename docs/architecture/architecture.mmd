@@ -1,0 +1,16 @@
+flowchart LR
+    A[Ứng dụng Android] --> N[User SDK native]
+    I[Ứng dụng iOS] -. cần triển khai .-> N
+    F[Flutter] -. bridge .-> N
+    R[React Native] -. native module .-> N
+    W[Web] -. client JavaScript .-> G[Voice Gateway]
+    N -->|HTTPS và WebSocket| G
+    G --> D[(Account, App, session, push)]
+    G --> C[(Redis call state)]
+    G -->|Điều khiển| M[LiveKit media]
+    N <-->|WebRTC audio| M
+    W <-. WebRTC cần triển khai .-> M
+    M <--> S[SIP bridge]
+    S <-->|SIP và RTP| P[Tổng đài, IVR, nhân viên]
+    G --> Q[FCM hiện có, APNs mở rộng]
+    Q -. tín hiệu cuộc gọi .-> N

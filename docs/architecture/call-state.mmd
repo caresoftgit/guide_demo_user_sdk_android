@@ -1,0 +1,13 @@
+stateDiagram-v2
+    state Gọi_ra {
+        [*] --> CREATING
+        CREATING --> RINGING
+        RINGING --> ACTIVE
+        ACTIVE --> ENDED
+    }
+    state Gọi_vào {
+        [*] --> IN_RINGING
+        IN_RINGING --> CONNECTING: Winner trả lời
+        CONNECTING --> IN_ACTIVE: Audio và SIP active
+        IN_ACTIVE --> IN_ENDED
+    }
