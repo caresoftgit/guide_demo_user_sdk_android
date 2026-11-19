@@ -1,6 +1,6 @@
 # Tích hợp User Voice SDK vào Android
 
-SDK 0.3.1 · UI 0.3.2 · Android API 26+ · Kotlin/JDK 17.
+SDK 0.4.0 · UI 0.4.0 · Android API 26+ · Kotlin/JDK 17.
 
 ## 1. Chuẩn bị thông tin
 
@@ -81,12 +81,12 @@ android {
     kotlinOptions { jvmTarget = "17" }
 }
 dependencies {
-    implementation 'vn.caresoft:customer-voice-android-ui:0.3.2'
+    implementation 'vn.caresoft:customer-voice-android-ui:0.4.0'
     implementation 'com.google.firebase:firebase-messaging:24.1.0'
 }
 ```
 
-UI kéo theo core 0.3.1. Nếu tự xây giao diện, dùng `vn.caresoft:customer-voice-android:0.3.1` thay dependency UI. Không thêm đồng thời bản SDK từ source và AAR.
+UI kéo theo core 0.4.0. Nếu tự xây giao diện, dùng `vn.caresoft:customer-voice-android:0.4.0` thay dependency UI. Không thêm đồng thời bản SDK từ source và AAR.
 
 ## 4. Cấu hình Firebase client và manifest
 
@@ -140,19 +140,39 @@ val session = CustomerVoice.login(userId, tenantApiToken)
 
 `userId` phải là ID khách hàng đã xác thực của ứng dụng, không lấy tùy ý từ input không tin cậy. Account token xác thực tích hợp account, không chứng minh riêng danh tính khách hàng. Không hardcode token account trong source, resources, BuildConfig hoặc APK phát hành; không ghi token/session vào log. Thống nhất cách cấp thông tin đăng nhập với Caresoft trước khi phát hành production.
 
-Theo dõi `CustomerVoice.sessionState`. Khi `LoggedOut` hoặc `LoginRequired`, hiển thị luồng đăng nhập của app và truyền lại hai tham số trên. Khi mất mạng, không tự xóa phiên hoặc tự đăng nhập lặp lại. Tác vụ đăng nhập/cuộc gọi nên thuộc service/application scope để không bị hủy khi Activity xoay hoặc đóng.
+Theo dõi `CustomerVoice.sessionState`. Khi `LoggedOut` hoặc `LoginRequired`, hiển thị luồng đăng nhập của app và truyền lại hai tham số trên. Khi mất mạng, không tự xóa phiên hoặc tự đăng nhập lặp lại. Khi Activity trở lại foreground, gọi `CustomerVoice.resume()` và lấy lại token FCM qua bộ đăng ký có kiểm tra session. Tác vụ đăng nhập/cuộc gọi nên thuộc service/application scope để không bị hủy khi Activity xoay hoặc đóng.
 
 ## 7. Đăng ký và xử lý FCM
 
-Sau login thành công **và sau restore phiên**, lấy token hiện tại rồi gọi:
+Chép [PushRegistration.kt](../demo/src/main/java/vn/caresoft/customervoice/demo/PushRegistration.kt) vào tầng app, đổi package cho phù hợp. Helper này tuần tự hóa request và ghi nhớ yêu cầu đăng ký token mới đến trong lúc request cũ đang chạy. Khởi tạo một instance trong Application:
 
 ```kotlin
-FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
-    appScope.launch { CustomerVoice.updatePushToken(token) }
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlinx.coroutines.*
+
+private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+private val voicePush = PushRegistration(
+    appScope,
+    session = {
+        (CustomerVoice.sessionState.value as? SessionState.Authenticated)?.session?.sessionId
+    },
+    token = {
+        suspendCancellableCoroutine<String> { continuation ->
+            FirebaseMessaging.getInstance().token
+                .addOnSuccessListener { if (continuation.isActive) continuation.resume(it) }
+                .addOnFailureListener { if (continuation.isActive) continuation.resumeWithException(it) }
+        }
+    },
+    register = { CustomerVoice.updatePushToken(it) }
+)
+
+fun reconcileVoicePush() {
+    appScope.launch { voicePush.reconcile() }
 }
 ```
 
-`appScope` do app quản lý (`SupervisorJob` + main dispatcher). Bắt lỗi trong coroutine và thử lại khi kết nối phục hồi/app resume; chỉ đăng ký khi session đang authenticated. Nếu session đổi trong lúc chờ Firebase, bỏ kết quả cũ rồi lấy/đăng ký lại cho session mới. Demo có [PushRegistration.kt](../demo/src/main/java/vn/caresoft/customervoice/demo/PushRegistration.kt) minh họa kiểm tra này.
+Gọi `reconcileVoicePush()` sau login, restore phiên, app resume và khi kết nối phục hồi. Chỉ đăng ký khi authenticated; helper bỏ kết quả Firebase thuộc session cũ. Lỗi mạng không xóa session, lần reconcile tiếp theo thử lại PUT an toàn. Xem cách nối các sự kiện trong [DemoApplication.kt](../demo/src/main/java/vn/caresoft/customervoice/demo/DemoApplication.kt).
 
 Trong Firebase service:
 
@@ -165,8 +185,8 @@ override fun onMessageReceived(message: RemoteMessage) {
 }
 
 override fun onNewToken(token: String) {
-    // Chuyển token cho tầng app: đăng ký nếu authenticated;
-    // nếu chưa đăng nhập thì lấy token mới nhất sau login/restore.
+    // Gọi hàm reconcileVoicePush() ở Application của bạn.
+    // Helper lấy token mới nhất và chỉ đăng ký khi authenticated.
 }
 ```
 
@@ -196,7 +216,7 @@ if (ready.canCall) CustomerVoice.call(businessNumber)
 
 Đầu số là chuỗi 1–32 chữ số, có thể có `+` đầu chuỗi. Không tự retry `call()` nếu timeout/mất response vì có thể tạo cuộc gọi trùng; đối chiếu `CustomerVoice.calls` trước. Chỉ hiển thị đã kết nối khi snapshot có `state == "ACTIVE"`.
 
-UI cài ở bước 5 tự hiển thị cuộc gọi vào/ra khi app ở foreground; incoming background dùng thông báo cuộc gọi. UI có trả lời, từ chối, kết thúc, tắt micro, đổi loa và DTMF trong cuộc gọi. Activity cuộc gọi tự đóng khi cuộc gọi kết thúc và quay về màn hình trước. Không cần xây lại các màn hình này hoặc thêm màn hình bấm số chủ động.
+UI cài ở bước 5 tự hiển thị cuộc gọi vào/ra khi app ở foreground; incoming background dùng thông báo cuộc gọi. UI có trả lời, từ chối, kết thúc, tắt micro, đổi loa và DTMF trong cuộc gọi. Activity cuộc gọi tự đóng khi cuộc gọi kết thúc hoặc dừng local và quay về màn hình trước, kể cả khi HTTP hangup chưa trả về. Không cần xây lại các màn hình này hoặc thêm màn hình bấm số chủ động.
 
 Android 14+ có quyền riêng để hiển thị cuộc gọi full-screen:
 
@@ -207,6 +227,18 @@ if (!CustomerVoiceUi.canShowIncomingScreen(activity)) {
 ```
 
 Mở yêu cầu này từ thao tác rõ ràng của người dùng. Cho phép notification và kênh cuộc gọi; kiểm tra full-screen trên thiết bị thật. SDK không bỏ qua PIN và không bảo đảm nhận cuộc gọi sau khi người dùng Force stop app. Khi OS không cho full-screen, dùng thông báo cuộc gọi còn được phép.
+
+### Khi chuyển mạng hoặc mất media
+
+SDK/UI tự hiển thị **Đang kết nối lại…**, thử khôi phục media của call hiện tại và
+trả lại âm thanh sau khi transport sẵn sàng. Không gọi lại `call()` từ host khi
+đang reconnect. Mute được giữ qua khôi phục; bật mic lại áp dụng cả track và audio
+capture. Mất kết nối liên tục 30 giây sẽ kết thúc local, đóng màn hình về Home và
+phát `NETWORK_RECOVERY_TIMEOUT`.
+
+Nếu tự xây UI, theo dõi `CustomerVoice.connectionStates`, hiển thị tiến trình,
+cho phép kết thúc và tạm khóa DTMF khi `RECONNECTING`. Chỉ ngắt WebSocket điều
+khiển không phải lý do kết thúc một call có media còn hoạt động.
 
 ## 10. Đăng xuất và nghiệm thu
 

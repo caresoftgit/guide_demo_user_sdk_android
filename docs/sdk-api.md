@@ -1,6 +1,6 @@
 # API Android SDK
 
-Core 0.3.1, namespace `vn.caresoft.customervoice`; UI 0.3.2, namespace `vn.caresoft.customervoice.ui`. Các hàm network/control là `suspend`; gọi trong coroutine và bắt `VoiceException`/lỗi kết nối. Không log credential hoặc payload nhạy cảm.
+Core 0.4.0, namespace `vn.caresoft.customervoice`; UI 0.4.0, namespace `vn.caresoft.customervoice.ui`. Các hàm network/control là `suspend`; gọi trong coroutine và bắt `VoiceException`/lỗi kết nối. Không log credential hoặc payload nhạy cảm.
 
 | API | Công dụng |
 |---|---|
@@ -18,6 +18,8 @@ Core 0.3.1, namespace `vn.caresoft.customervoice`; UI 0.3.2, namespace `vn.cares
 | `getAvailableAudioRoutes(callId)` | Danh sách `AudioRoute` hiện có |
 | `selectAudioRoute(callId, route)` | Chọn một route từ danh sách hiện có |
 | `sendDtmf(callId, digit)` | Gửi một ký tự `0–9`, `*`, `#` trong cuộc gọi |
+| `resume()` | Đồng bộ phiên/cuộc gọi khi app về foreground; không tự tạo hoặc trả lời call |
+| `isCallPresentable(callId)` | Kiểm tra cuộc gọi còn được hiển thị trên thiết bị |
 | `currentTime()` | Đồng hồ hiệu chỉnh theo server để so hạn cuộc gọi |
 
 `VoiceConfig`: `backendUrl`, `accountId`, `appId`, tùy chọn `notificationTitle`, `incomingIntent`. `allowDebugLoopback` chỉ dành test local debug; không dùng trong bản phát hành.
@@ -29,6 +31,7 @@ Core 0.3.1, namespace `vn.caresoft.customervoice`; UI 0.3.2, namespace `vn.cares
 | `sessionState` | `LoggedOut`, `Authenticated(session)`, `LoginRequired(reason)` |
 | `readiness` | `sessionStatus`, `isLoggedIn`, `canCall`, `canReceive`, `userId`, `reasons`, `checkedAt`, `controlConnected` |
 | `calls` | Danh sách snapshot, gồm cuộc gọi terminal; lọc `!terminal && !lost` để tìm cuộc gọi thiết bị còn điều khiển |
+| `connectionStates` | Map call ID → `CONNECTING`, `CONNECTED`, `RECONNECTING` của media; độc lập với server call state |
 | `audioStates` | Map call ID → `CallAudioState(muted, routes)`; `route.selected` phản ánh route Android đã báo |
 | `events` | `VoiceEvent(type, callId, code)` để cập nhật/xử lý lỗi |
 
@@ -50,4 +53,23 @@ Core 0.3.1, namespace `vn.caresoft.customervoice`; UI 0.3.2, namespace `vn.cares
 
 Activity SDK tự đóng khi call kết thúc. Nếu nhúng `CustomerVoiceCallView`, host tự điều hướng/đóng màn hình theo `CustomerVoice.calls`. Không gọi `answer()` hai lần từ UI của host nếu đã để UI/notification SDK xử lý.
 
-Thứ tự triển khai và ví dụ có ở [hướng dẫn tích hợp](android-integration-guide.md).
+Thứ tự triển khai và ví dụ có ở [hướng dẫn tích hợp](https://github.com/caresoftgit/guide_demo_user_sdk_android/blob/main/docs/android-integration-guide.md).
+
+## Khôi phục mạng và kết thúc local
+
+SDK quan sát mạng mặc định và sự cố LiveKit. Khi mất mạng hoặc chuyển Wi-Fi/di
+động trong cuộc gọi đã kết nối, `connectionStates[callId]` chuyển thành
+`RECONNECTING`, phát `connection_changed` với code tương ứng. SDK lấy media grant
+mới rồi khôi phục transport trong **cùng call/room**, giữ trạng thái mute; không
+POST tạo call mới. Chỉ báo `CONNECTED` sau khi kết nối nhận và publisher ICE/DTLS cùng sẵn sàng.
+Server snapshot `ACTIVE` vẫn là mốc đàm thoại; media connected không đổi state này.
+
+Không phục hồi trong **30 giây liên tục**, SDK dừng mic/media/Telecom, đóng call UI,
+phát `NETWORK_RECOVERY_TIMEOUT` và cố gửi hangup. Callback mạng lặp không kéo dài
+hạn; response/callback cũ không hồi sinh call đã đóng. Socket điều khiển ngắt riêng
+không đóng media còn hoạt động. Gateway hỗ trợ grace ACTIVE 30 giây từ bản 0.3.1.
+
+`hangup`/`reject` dọn local và đóng UI trước khi chờ HTTP. Nếu control request thất
+bại, host báo lỗi phù hợp; không khôi phục call local đã đóng. `calls` giữ snapshot
+terminal/lost, nhưng loại call đã dừng local mà server chưa trả terminal.
+Host dùng `isCallPresentable` thay vì chỉ kiểm tra token hoặc server ACTIVE.

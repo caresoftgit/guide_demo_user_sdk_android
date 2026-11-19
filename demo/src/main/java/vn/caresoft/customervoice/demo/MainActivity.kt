@@ -75,11 +75,13 @@ class MainActivity : Activity() {
   scope.launch { DemoApplication.loggingIn.collect { render() } }
   scope.launch { CustomerVoice.sessionState.collect { render() } }
   scope.launch { CustomerVoice.calls.collect { render() } }
+  scope.launch { CustomerVoice.connectionStates.collect { render() } }
  }
  override fun onResume() {
   super.onResume()
   render()
-  scope.launch { CustomerVoice.checkReadiness(); DemoApplication.reconcilePush() }
+  CustomerVoice.resume()
+  DemoApplication.reconcilePush()
   if(Build.VERSION.SDK_INT>=33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED &&
    !getPreferences(MODE_PRIVATE).getBoolean("notificationsAsked",false)) {
    getPreferences(MODE_PRIVATE).edit().putBoolean("notificationsAsked",true).apply()
@@ -165,6 +167,7 @@ class MainActivity : Activity() {
    !DemoApplication.configurationReady -> "Điền cấu hình ứng dụng trong demo_config.xml rồi build lại demo."
    DemoApplication.loggingIn.value -> "Đang đăng nhập…"
    DemoApplication.calling.value -> "Đang kết nối đến CSKH…"
+   CustomerVoice.connectionStates.value.values.any { it==CallConnectionState.RECONNECTING } -> "Đang kết nối lại cuộc gọi…"
    active -> "Bạn đang có cuộc gọi."
    ready.sessionStatus==SessionStatus.LOGGED_OUT -> "Nhấn Đăng nhập để sử dụng dịch vụ."
    ready.sessionStatus==SessionStatus.UNKNOWN -> "Chưa xác minh được phiên. Vui lòng kiểm tra kết nối."

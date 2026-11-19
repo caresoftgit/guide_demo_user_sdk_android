@@ -1,6 +1,6 @@
 # Chạy demo Android
 
-Demo 0.3.3 dùng core 0.3.1/UI 0.3.2 từ `../maven/`. Có đăng nhập/đăng xuất, nút Gọi CSKH và giao diện cuộc gọi có sẵn. Không có tài khoản hay server test đi kèm.
+Demo 0.4.0 dùng core 0.4.0/UI 0.4.0 từ `../maven/`. Có đăng nhập/đăng xuất, nút Gọi CSKH và giao diện cuộc gọi có sẵn. Không có tài khoản hay server test đi kèm.
 
 ## 1. Tạo cấu hình
 
@@ -43,7 +43,8 @@ Nếu chưa điền cấu hình, app hiện yêu cầu cấu hình và khóa nú
 2. Bấm **Đăng nhập**, nhập User ID khách hàng và account API token được cấp. Token được che và xóa khỏi dialog khi đóng; demo không lưu token account.
 3. Chờ trạng thái sẵn sàng. Bấm **Gọi CSKH** để gọi đầu số đã cấu hình; kiểm tra đàm thoại, loa, micro và kết thúc cuộc gọi.
 4. Nhờ phía tổng đài gọi vào User ID đó. Kiểm tra lúc app mở, ở nền, khóa màn hình. Kết thúc phải quay về màn hình trước cuộc gọi.
-5. Bấm **Đăng xuất**, xác nhận; app quay lại nút đăng nhập. Đăng nhập lại với thông tin cần kiểm thử.
+5. Chuyển Wi-Fi ↔ di động trong call: hiện Đang kết nối lại rồi phục hồi, giữ mute. Mất mạng trên 30 giây: call đóng về Home.
+6. Bấm **Đăng xuất**, xác nhận; app quay lại nút đăng nhập. Đăng nhập lại với thông tin cần kiểm thử.
 
 Demo có thể khôi phục session đã lưu an toàn sau khi mở lại app. Trong app thực tế, thay dialog demo bằng luồng đăng nhập đã xác thực của bạn; truyền cùng các tham số SDK.
 

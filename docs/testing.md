@@ -6,13 +6,13 @@ Dùng thiết bị Android thật có Google Play Services, Internet và cấu h
 
 1. **Login:** thông tin đúng đăng nhập được; sai token/app/package bị từ chối. Token không xuất hiện trong log hoặc dữ liệu plain text.
 2. **Restore:** đóng/mở app, SDK khôi phục phiên; app đăng ký FCM lại và kiểm tra readiness. `UNKNOWN` khi offline không tự biến thành logout.
-3. **Gọi ra:** bấm Gọi CSKH một lần, phía tổng đài nhận đúng đầu số. Đàm thoại hai chiều, mute/unmute, loa trong/ngoài, tai nghe nếu hỗ trợ, DTMF với IVR.
+3. **Gọi ra:** bấm Gọi CSKH một lần, phía tổng đài nhận đúng đầu số. Nói liên tục ngay từ đầu để kiểm tra uplink. Tắt/bật mic nhiều lần từ app và Android; cả hai phải bật lại được. Kiểm tra loa trong/ngoài, tai nghe nếu hỗ trợ, DTMF với IVR.
 4. **Nhận cuộc gọi:** thử lúc app foreground, background và khóa màn hình; kiểm tra notification, màn hình nhận, trả lời, từ chối, cuộc gọi nhỡ/hủy trước khi trả lời. Khi mở khóa, không hiện cuộc gọi cũ đã hết hạn.
-5. **Kết thúc:** thử cả hai bên gác máy; màn hình cuộc gọi đóng, trở về màn hình trước, không còn foreground notification/cuộc gọi Android.
+5. **Kết thúc:** thử cả hai bên gác máy; màn hình cuộc gọi đóng, trở về màn hình trước, không còn foreground notification/cuộc gọi Android. Khi HTTP hangup lỗi/chậm, màn hình vẫn phải đóng ngay.
 6. **Quyền:** từ chối micro/notification/full-screen; app hiển thị hướng dẫn phù hợp. Cấp lại quyền và kiểm tra lại. Không tự trả lời khi chưa đủ quyền.
-7. **Mạng:** ngắt mạng khi ringing/active, đổi Wi-Fi/mobile; không tạo cuộc gọi lặp khi lỗi. Kiểm tra cuộc gọi được dọn khi mất kết nối kéo dài.
+7. **Mạng:** ngắt mạng khi ringing/active, đổi Wi-Fi/mobile; không tạo cuộc gọi lặp khi lỗi. Phải thấy Đang kết nối lại, giữ cùng call và trạng thái mute. Ngắt mọi mạng trên 30 giây: mic/Telecom/UI được dọn, callback muộn không mở lại call. Ngắt riêng kênh điều khiển không dừng audio còn tốt.
 8. **Nhiều thiết bị:** cùng user trên hai thiết bị, một máy trả lời thì máy kia dừng ringing, không được gác cuộc gọi máy thắng.
-9. **Logout/login:** logout cả khi rảnh và có call; không còn điều khiển/nhận call bằng session cũ. Login lại được, đăng ký lại push. Không giữ token account trong form.
+9. **Logout/login:** logout cả khi rảnh và có call; không còn điều khiển/nhận call bằng session cũ. Login lại được, đăng ký lại push. Thử xoay FCM token trong lúc request đăng ký cũ chưa xong; token mới phải được gửi tiếp mà không cần mở lại app. Không giữ token account trong form.
 
 ## Khi có lỗi
 
@@ -25,6 +25,7 @@ Dùng thiết bị Android thật có Google Play Services, Internet và cấu h
 | `VOICE_NOT_READY`/503 | Nhờ Caresoft kiểm tra gateway/media/định tuyến, không tự gọi lại liên tục |
 | `VOICE_SERVER_NOT_CONFIGURED` | Nhờ Caresoft kiểm tra cấu hình định tuyến account ở gateway |
 | Gọi được nhưng mất tiếng | Quyền micro, thiết bị âm thanh đang chọn, mạng và media route phía gateway/tổng đài |
+| `NETWORK_RECOVERY_TIMEOUT` | Call đã đóng sau 30 giây không phục hồi media; kiểm tra mạng trước khi gọi mới |
 | Timeout khi tạo call | Quan sát snapshot hiện tại, không blind retry `call()` |
 
 Khi gửi báo lỗi, cung cấp phiên bản SDK/UI/app, Android/model, thời điểm và múi giờ, bước tái hiện và mã lỗi đã che dữ liệu. Không gửi API token, access/refresh/media token, FCM token hoặc private key.

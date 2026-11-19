@@ -20,6 +20,13 @@ class DemoApplication : Application() {
         CustomerVoiceUi.install(this)
         configurationReady = runCatching { configureSaved(this) }.getOrDefault(false)
         appScope.launch {
+            CustomerVoice.events.collect { event ->
+                if(event.type=="connection_changed" && event.code==CallConnectionState.CONNECTED.name) reconcilePush()
+                if(event.type=="error" && event.code=="NETWORK_RECOVERY_TIMEOUT")
+                    _callError.value="Cuộc gọi đã kết thúc vì mất kết nối quá lâu. Vui lòng kiểm tra mạng rồi gọi lại."
+            }
+        }
+        appScope.launch {
             CustomerVoice.sessionState.map { (it as? SessionState.Authenticated)?.session?.sessionId }
                 .distinctUntilChanged().collect { session ->
                     if(session!=null) reconcilePush()
@@ -87,7 +94,9 @@ class DemoApplication : Application() {
                     .addOnFailureListener { if(continuation.isActive) continuation.resumeWithException(it) }
             } }, { CustomerVoice.updatePushToken(it) })
         fun reconcilePush() {
-            if(::appContext.isInitialized && FirebaseApp.getApps(appContext).isNotEmpty()) push.reconcile()
+            appScope.launch {
+                if(::appContext.isInitialized && FirebaseApp.getApps(appContext).isNotEmpty()) push.reconcile()
+            }
         }
         private lateinit var appContext: Context
 
@@ -123,6 +132,6 @@ class DemoApplication : Application() {
 class DemoMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) { CustomerVoice.handleRemoteMessage(message.data) }
     override fun onNewToken(token: String) {
-        CoroutineScope(SupervisorJob()+Dispatchers.IO).launch { runCatching { CustomerVoice.updatePushToken(token) } }
+        DemoApplication.reconcilePush()
     }
 }

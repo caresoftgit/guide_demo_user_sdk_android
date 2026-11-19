@@ -1,0 +1,124 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "vn.caresoft",
+    "module": "customer-voice-android-ui",
+    "version": "0.4.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.10.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "vn.caresoft",
+          "module": "customer-voice-android",
+          "version": {
+            "requires": "0.4.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.0.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "customer-voice-android-ui-0.4.0.aar",
+          "url": "customer-voice-android-ui-0.4.0.aar",
+          "size": 77360,
+          "sha512": "a7afd8129e43ba9937e2ebd94f123990210a4bb72b55c9a4d9937a1d0257ee684ad93d48ee516e5fb2199809bf2b9a29d9b5ccdaef8bead6d61d44cc25dfd5b1",
+          "sha256": "bf58ab5af8f5544da752dd20ee754e81548c7c3fe040aa65d0912bcc9dfb67cf",
+          "sha1": "9e3b27d0d5e3ef7b864324abaa1554deddc1652d",
+          "md5": "9e81b090fdc0871939c4c2e9fc763459"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.core",
+          "module": "core-telecom",
+          "version": {
+            "requires": "1.0.0"
+          }
+        },
+        {
+          "group": "androidx.core",
+          "module": "core-ktx",
+          "version": {
+            "requires": "1.15.0"
+          }
+        },
+        {
+          "group": "vn.caresoft",
+          "module": "customer-voice-android",
+          "version": {
+            "requires": "0.4.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.0.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "customer-voice-android-ui-0.4.0.aar",
+          "url": "customer-voice-android-ui-0.4.0.aar",
+          "size": 77360,
+          "sha512": "a7afd8129e43ba9937e2ebd94f123990210a4bb72b55c9a4d9937a1d0257ee684ad93d48ee516e5fb2199809bf2b9a29d9b5ccdaef8bead6d61d44cc25dfd5b1",
+          "sha256": "bf58ab5af8f5544da752dd20ee754e81548c7c3fe040aa65d0912bcc9dfb67cf",
+          "sha1": "9e3b27d0d5e3ef7b864324abaa1554deddc1652d",
+          "md5": "9e81b090fdc0871939c4c2e9fc763459"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "customer-voice-android-ui-0.4.0-sources.jar",
+          "url": "customer-voice-android-ui-0.4.0-sources.jar",
+          "size": 12282,
+          "sha512": "944a8c3e1b15d6ad0d34de17e849977f708c523650189f277103a13cbb5a664cdb45540ad2bfe54b19e9876d316ff1519e8ae1b2b465a0387b7f458ac5743167",
+          "sha256": "83e853043d26c86c79616320cde411e83626f957b067ec64fcb615684aaa5342",
+          "sha1": "56b570dd62d12fea65a0a1cecb4654571e7777c8",
+          "md5": "b8412515eac80e2c46b2a2eb7e4a4865"
+        }
+      ]
+    }
+  ]
+}

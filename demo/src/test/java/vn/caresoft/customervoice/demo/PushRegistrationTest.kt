@@ -24,4 +24,15 @@ class PushRegistrationTest {
   push.reconcile(); runCurrent(); session="two"; fetched.complete("old-token"); runCurrent()
   assertTrue(registered.isEmpty())
  }
+ @Test fun rotationDuringInFlightRegistrationPublishesLatestTokenWithoutResume()=runTest {
+  var latest="old";val first=CompletableDeferred<Unit>();val registered=mutableListOf<String>()
+  val push=PushRegistration(this,{"session"},{latest}) {
+   registered.add(it);if(it=="old") first.await()
+  }
+  push.reconcile();runCurrent();latest="new";push.reconcile();runCurrent()
+  assertEquals(listOf("old"),registered)
+  first.complete(Unit);runCurrent()
+  assertEquals(listOf("old","new"),registered)
+ }
+
 }
